@@ -1,243 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>God-Tier Spirograph Simulator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            background-color: #212529;
-            color: #f8f9fa;
-            margin: 0;
-            overflow: hidden; /* Prevent scrollbars */
-        }
-        #canvas {
-            background-color: #1a1a1a;
-            display: block;
-        }
-        #controls-box {
-            position: fixed;
-            top: 50px;
-            left: 50px;
-            width: 350px;
-            background-color: rgba(52, 58, 64, 0.9);
-            border: 1px solid #495057;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-        }
-        #controls-header {
-            cursor: move;
-            text-align: center;
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #495057;
-        }
-        .form-label, .form-check-label { color: #ced4da; }
-        .d-input-group {
-            display: flex;
-            align-items: center;
-        }
+      body {
+        background-color: #212529;
+        color: #f8f9fa;
+        margin: 0;
+        overflow: hidden; /* Prevent scrollbars */
+      }
+      #canvas {
+        background-color: #1a1a1a;
+        display: block;
+      }
+      #controls-box {
+        position: fixed;
+        top: 50px;
+        left: 50px;
+        width: 350px;
+        background-color: rgba(52, 58, 64, 0.9);
+        border: 1px solid #495057;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+      }
+      #controls-header {
+        cursor: move;
+        text-align: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #495057;
+      }
+      .form-label,
+      .form-check-label {
+        color: #ced4da;
+      }
+      .d-input-group {
+        display: flex;
+        align-items: center;
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <canvas id="canvas"></canvas>
 
     <div id="controls-box">
-        <div id="controls-header">
-            <h5 class="card-title mb-0">Spirograph Controls</h5>
-        </div>
+      <div id="controls-header">
+        <h5 class="card-title mb-0">Spirograph Controls</h5>
+      </div>
 
+      <div class="mb-3">
+        <label for="presets" class="form-label">Presets</label>
+        <select id="presets" class="form-select">
+          <option value="custom">Custom</option>
+          <option value="classicFlower">
+            Classic Flower (R=200, r=120, d=100)
+          </option>
+          <option value="starburst">Starburst (R=160, r=40, d=80)</option>
+          <option value="rosette">
+            Rosette (R=240, r=100, d=120, outside)
+          </option>
+          <option value="toroidalDonut">
+            Toroidal Donut (R=240, r=200, d=100, inside)
+          </option>
+          <option value="complexRosette">
+            Complex Rosette (R=210, r=120, d=150, inside)
+          </option>
+          <option value="fineLineFlower">
+            Fine Line Flower (R=200, r=160, d=180, inside)
+          </option>
+          <option value="simpleEpicycloid">
+            Simple Epicycloid (R=180, r=60, d=60, outside)
+          </option>
+        </select>
+      </div>
+
+      <form id="spirograph-form">
         <div class="mb-3">
-            <label for="presets" class="form-label">Presets</label>
-            <select id="presets" class="form-select">
-                <option value="custom">Custom</option>
-                <option value="classicFlower">Classic Flower (R=200, r=120, d=100)</option>
-                <option value="starburst">Starburst (R=160, r=40, d=80)</option>
-                <option value="rosette">Rosette (R=240, r=100, d=120, outside)</option>
-                <option value="toroidalDonut">Toroidal Donut (R=240, r=200, d=100, inside)</option>
-                <option value="complexRosette">Complex Rosette (R=210, r=120, d=150, inside)</option>
-                <option value="fineLineFlower">Fine Line Flower (R=200, r=160, d=180, inside)</option>
-                <option value="simpleEpicycloid">Simple Epicycloid (R=180, r=60, d=60, outside)</option>
-            </select>
+          <label for="R" class="form-label">Large Radius (R)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="R"
+            value="200"
+            step="1"
+          />
         </div>
-
-        <form id="spirograph-form">
-            <div class="mb-3">
-                <label for="R" class="form-label">Large Radius (R)</label>
-                <input type="number" class="form-control" id="R" value="200" step="10">
-            </div>
-            <div class="mb-3">
-                <label for="r" class="form-label">Small Radius (r)</label>
-                <input type="number" class="form-control" id="r" value="120" step="10">
-            </div>
-            <div id="pens-container">
-                <label class="form-label">Pen Positions (d) & Colors <button type="button" class="btn btn-sm btn-secondary ms-2" id="addPen">+</button></label>
-                <div class="input-group d-input-group mb-2">
-                    <input type="number" class="form-control d-input" value="80" step="10">
-                    <input type="color" class="form-control form-control-color w-auto" value="#007bff">
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="speed" class="form-label">Drawing Speed (ms)</label>
-                <input type="number" class="form-control" id="speed" value="10" step="1">
-            </div>
-            <div class="mb-3">
-                <label for="lineWidth" class="form-label">Line Thickness</label>
-                <input type="number" class="form-control" id="lineWidth" value="2" step="1" min="1">
-            </div>
-            <div class="mb-3 form-check">
-                <input class="form-check-input" type="checkbox" id="inside">
-                <label class="form-check-label" for="inside">Draw inside</label>
-            </div>
-            <div class="d-flex justify-content-between mt-3">
-                <button type="submit" class="btn btn-primary me-2">Draw</button>
-                <button type="button" class="btn btn-warning" id="pauseBtn">Pause</button>
-                <button type="button" class="btn btn-danger ms-2" id="stopBtn">Stop/Reset</button>
-            </div>
-        </form>
+        <div class="mb-3">
+          <label for="r" class="form-label">Small Radius (r)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="r"
+            value="120"
+            step="1"
+          />
+        </div>
+        <div id="pens-container">
+          <label class="form-label"
+            >Pen Positions (d) & Colors
+            <button
+              type="button"
+              class="btn btn-sm btn-secondary ms-2"
+              id="addPen"
+            >
+              +
+            </button></label
+          >
+          <div class="input-group d-input-group mb-2">
+            <input
+              type="number"
+              class="form-control d-input"
+              value="80"
+              step="1"
+            />
+            <input
+              type="color"
+              class="form-control form-control-color w-auto"
+              value="#007bff"
+            />
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="speed" class="form-label">Drawing Speed (ms)</label>
+          <input
+            type="number"
+            class="form-control"
+            id="speed"
+            value="10"
+            step="1"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="lineWidth" class="form-label">Line Thickness</label>
+          <input
+            type="number"
+            class="form-control"
+            id="lineWidth"
+            value="2"
+            step="1"
+            min="1"
+          />
+        </div>
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" id="inside" />
+          <label class="form-check-label" for="inside">Draw inside</label>
+        </div>
+        <div class="d-flex justify-content-between mt-3">
+          <button type="submit" class="btn btn-primary me-2">Draw</button>
+          <button type="button" class="btn btn-warning" id="pauseBtn">
+            Pause
+          </button>
+          <button type="button" class="btn btn-danger ms-2" id="stopBtn">
+            Stop/Reset
+          </button>
+        </div>
+      </form>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script src="wasm_exec.js"></script>
     <script>
-        const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
-            go.run(result.instance);
-            setupInitialState();
-        });
+      const go = new Go();
+      WebAssembly.instantiateStreaming(
+        fetch("main.wasm"),
+        go.importObject
+      ).then((result) => {
+        go.run(result.instance);
+        setupInitialState();
+      });
 
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        const form = document.getElementById("spirograph-form");
-        const pensContainer = document.getElementById("pens-container");
-        const addPenBtn = document.getElementById("addPen");
-        const presetsSelect = document.getElementById("presets");
-        const pauseBtn = document.getElementById("pauseBtn");
-        const stopBtn = document.getElementById("stopBtn");
-        const controlsBox = document.getElementById("controls-box");
-        const controlsHeader = document.getElementById("controls-header");
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const form = document.getElementById("spirograph-form");
+      const pensContainer = document.getElementById("pens-container");
+      const addPenBtn = document.getElementById("addPen");
+      const presetsSelect = document.getElementById("presets");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const controlsBox = document.getElementById("controls-box");
+      const controlsHeader = document.getElementById("controls-header");
 
-        let animationFrameId;
-        let pointsToDraw = [];
-        let penColors = [];
-        let currentPointIndex = 0;
-        let animationPaused = false;
-        let lastTime;
+      let animationFrameId;
+      let pointsToDraw = [];
+      let penColors = [];
+      let currentPointIndex = 0;
+      let animationPaused = false;
+      let lastTime;
 
-        // Resize canvas to full window
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            drawPreview();
-        }
-        window.addEventListener('resize', resizeCanvas);
-        
-        // Dragging functionality for the controls box
-        let isDragging = false;
-        let startX, startY;
-        let boxX, boxY;
+      // Resize canvas to full window
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        drawPreview();
+      }
+      window.addEventListener("resize", resizeCanvas);
 
-        controlsHeader.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            boxX = controlsBox.offsetLeft;
-            boxY = controlsBox.offsetTop;
-        });
+      // Dragging functionality for the controls box
+      let isDragging = false;
+      let startX, startY;
+      let boxX, boxY;
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            controlsBox.style.left = `${boxX + dx}px`;
-            controlsBox.style.top = `${boxY + dy}px`;
-        });
+      controlsHeader.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        boxX = controlsBox.offsetLeft;
+        boxY = controlsBox.offsetTop;
+      });
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+      document.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        controlsBox.style.left = `${boxX + dx}px`;
+        controlsBox.style.top = `${boxY + dy}px`;
+      });
 
-        // Add pen button functionality
-        addPenBtn.addEventListener("click", () => {
-            const newPenGroup = document.createElement("div");
-            newPenGroup.className = "input-group d-input-group mb-2";
-            newPenGroup.innerHTML = `
-                <input type="number" class="form-control d-input" value="0" step="10">
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
+
+      // Add pen button functionality
+      addPenBtn.addEventListener("click", () => {
+        const newPenGroup = document.createElement("div");
+        newPenGroup.className = "input-group d-input-group mb-2";
+        newPenGroup.innerHTML = `
+                <input type="number" class="form-control d-input" value="0" step="1">
                 <input type="color" class="form-control form-control-color w-auto" value="#ffc107">
                 <button type="button" class="btn btn-sm btn-danger ms-2 remove-pen-btn">-</button>
             `;
-            pensContainer.appendChild(newPenGroup);
-        });
+        pensContainer.appendChild(newPenGroup);
+      });
 
-        // Event delegation for removing pens
-        pensContainer.addEventListener("click", (e) => {
-            if (e.target.classList.contains("remove-pen-btn") && pensContainer.querySelectorAll('.d-input-group').length > 1) {
-                e.target.closest('.d-input-group').remove();
-                drawPreview();
-            }
-        });
-        
-        // Function to draw the preview circles
-        function drawPreview() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const R = parseFloat(document.getElementById("R").value);
-            const r = parseFloat(document.getElementById("r").value);
-            const dInputs = document.querySelectorAll(".d-input");
-            const dArray = Array.from(dInputs).map(input => parseFloat(input.value));
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            
-            // Draw the fixed circle (R)
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, R, 0, 2 * Math.PI);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.setLineDash([5, 5]);
-            ctx.stroke();
-
-            // Draw the moving circle (r) and pens
-            // This is just a simple preview; for a moving preview, it would be a separate animation.
-            ctx.beginPath();
-            const movingCircleX = centerX + (document.getElementById("inside").checked ? R - r : R + r);
-            const movingCircleY = centerY;
-            ctx.arc(movingCircleX, movingCircleY, r, 0, 2 * Math.PI);
-            ctx.setLineDash([]); // Solid line
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-            ctx.stroke();
-
-            // Draw the pen positions
-            dArray.forEach((d, index) => {
-                const penColor = document.querySelectorAll(".form-control-color")[index].value;
-                ctx.beginPath();
-                ctx.arc(movingCircleX + d, movingCircleY, 3, 0, 2 * Math.PI);
-                ctx.fillStyle = penColor;
-                ctx.fill();
-            });
+      // Event delegation for removing pens
+      pensContainer.addEventListener("click", (e) => {
+        if (
+          e.target.classList.contains("remove-pen-btn") &&
+          pensContainer.querySelectorAll(".d-input-group").length > 1
+        ) {
+          e.target.closest(".d-input-group").remove();
+          drawPreview();
         }
-        
-        // Add event listeners to redraw preview on change
-        document.getElementById("R").addEventListener('input', drawPreview);
-        document.getElementById("r").addEventListener('input', drawPreview);
-        document.getElementById("inside").addEventListener('change', drawPreview);
-        pensContainer.addEventListener('input', drawPreview);
-        
-        // Initial setup
-        function setupInitialState() {
-            resizeCanvas();
-            drawPreview();
-        }
+      });
 
-        // Presets functionality
-        presetsSelect.addEventListener("change", (e) => {
-            const preset = e.target.value;
-            if (preset !== "custom") {
-                // Clear any existing extra pens
-                pensContainer.innerHTML = `
+      // Function to draw the preview circles
+      function drawPreview() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const R = parseFloat(document.getElementById("R").value);
+        const r = parseFloat(document.getElementById("r").value);
+        const dInputs = document.querySelectorAll(".d-input");
+        const dArray = Array.from(dInputs).map((input) =>
+          parseFloat(input.value)
+        );
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        // Draw the fixed circle (R)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, R, 0, 2 * Math.PI);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+
+        // Draw the moving circle (r) and pens
+        // This is just a simple preview; for a moving preview, it would be a separate animation.
+        ctx.beginPath();
+        const movingCircleX =
+          centerX + (document.getElementById("inside").checked ? R - r : R + r);
+        const movingCircleY = centerY;
+        ctx.arc(movingCircleX, movingCircleY, r, 0, 2 * Math.PI);
+        ctx.setLineDash([]); // Solid line
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.stroke();
+
+        // Draw the pen positions
+        dArray.forEach((d, index) => {
+          const penColor = document.querySelectorAll(".form-control-color")[
+            index
+          ].value;
+          ctx.beginPath();
+          ctx.arc(movingCircleX + d, movingCircleY, 3, 0, 2 * Math.PI);
+          ctx.fillStyle = penColor;
+          ctx.fill();
+        });
+      }
+
+      // Add event listeners to redraw preview on change
+      document.getElementById("R").addEventListener("input", drawPreview);
+      document.getElementById("r").addEventListener("input", drawPreview);
+      document.getElementById("inside").addEventListener("change", drawPreview);
+      pensContainer.addEventListener("input", drawPreview);
+
+      // Initial setup
+      function setupInitialState() {
+        resizeCanvas();
+        drawPreview();
+      }
+
+      // Presets functionality
+      presetsSelect.addEventListener("change", (e) => {
+        const preset = e.target.value;
+        if (preset !== "custom") {
+          // Clear any existing extra pens
+          pensContainer.innerHTML = `
                     <label class="form-label">Pen Positions (d) & Colors <button type="button" class="btn btn-sm btn-secondary ms-2" id="addPen">+</button></label>
                     <div class="input-group d-input-group mb-2">
                         <input type="number" class="form-control d-input" value="0" step="10">
@@ -245,125 +320,159 @@
                     </div>
                 `;
 
-                const R = document.getElementById("R");
-                const r = document.getElementById("r");
-                const dInput = document.querySelector(".d-input");
-                const colorInput = document.querySelector(".form-control-color");
-                const inside = document.getElementById("inside");
+          const R = document.getElementById("R");
+          const r = document.getElementById("r");
+          const dInput = document.querySelector(".d-input");
+          const colorInput = document.querySelector(".form-control-color");
+          const inside = document.getElementById("inside");
 
-                switch (preset) {
-                    case "classicFlower":
-                        R.value = 200; r.value = 120; dInput.value = 100; colorInput.value = '#e74c3c'; inside.checked = true;
-                        break;
-                    case "starburst":
-                        R.value = 160; r.value = 40; dInput.value = 80; colorInput.value = '#f1c40f'; inside.checked = true;
-                        break;
-                    case "rosette":
-                        R.value = 240; r.value = 100; dInput.value = 120; colorInput.value = '#3498db'; inside.checked = false;
-                        break;
-                    case "toroidalDonut":
-                        R.value = 240; r.value = 200; dInput.value = 100; colorInput.value = '#9b59b6'; inside.checked = true;
-                        break;
-                    case "complexRosette":
-                        R.value = 210; r.value = 120; dInput.value = 150; colorInput.value = '#e67e22'; inside.checked = true;
-                        break;
-                    case "fineLineFlower":
-                        R.value = 200; r.value = 160; dInput.value = 180; colorInput.value = '#1abc9c'; inside.checked = true;
-                        break;
-                    case "simpleEpicycloid":
-                        R.value = 180; r.value = 60; dInput.value = 60; colorInput.value = '#34495e'; inside.checked = false;
-                        break;
-                }
-            }
-            drawPreview();
-        });
+          switch (preset) {
+            case "classicFlower":
+              R.value = 200;
+              r.value = 120;
+              dInput.value = 100;
+              colorInput.value = "#e74c3c";
+              inside.checked = true;
+              break;
+            case "starburst":
+              R.value = 160;
+              r.value = 40;
+              dInput.value = 80;
+              colorInput.value = "#f1c40f";
+              inside.checked = true;
+              break;
+            case "rosette":
+              R.value = 240;
+              r.value = 100;
+              dInput.value = 120;
+              colorInput.value = "#3498db";
+              inside.checked = false;
+              break;
+            case "toroidalDonut":
+              R.value = 240;
+              r.value = 200;
+              dInput.value = 100;
+              colorInput.value = "#9b59b6";
+              inside.checked = true;
+              break;
+            case "complexRosette":
+              R.value = 210;
+              r.value = 120;
+              dInput.value = 150;
+              colorInput.value = "#e67e22";
+              inside.checked = true;
+              break;
+            case "fineLineFlower":
+              R.value = 200;
+              r.value = 160;
+              dInput.value = 180;
+              colorInput.value = "#1abc9c";
+              inside.checked = true;
+              break;
+            case "simpleEpicycloid":
+              R.value = 180;
+              r.value = 60;
+              dInput.value = 60;
+              colorInput.value = "#34495e";
+              inside.checked = false;
+              break;
+          }
+        }
+        drawPreview();
+      });
 
-        // Animation loop
-        function animate(timestamp) {
-            if (!lastTime) lastTime = timestamp;
-            const deltaTime = timestamp - lastTime;
-            lastTime = timestamp;
-            
-            if (animationPaused) {
-                animationFrameId = requestAnimationFrame(animate);
-                return;
-            }
+      // Animation loop
+      function animate(timestamp) {
+        if (!lastTime) lastTime = timestamp;
+        const deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
 
-            const speed = parseInt(document.getElementById("speed").value, 10);
-            const steps = Math.max(1, Math.floor(deltaTime / speed));
-
-            if (currentPointIndex < pointsToDraw[0].length - 1) {
-                for(let k = 0; k < steps && currentPointIndex < pointsToDraw[0].length - 1; k++) {
-                    currentPointIndex++;
-                    for(let i = 0; i < pointsToDraw.length; i++) {
-                        const p1 = pointsToDraw[i][currentPointIndex - 1];
-                        const p2 = pointsToDraw[i][currentPointIndex];
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x + canvas.width / 2, p1.y + canvas.height / 2);
-                        ctx.lineTo(p2.x + canvas.width / 2, p2.y + canvas.height / 2);
-                        ctx.strokeStyle = penColors[i];
-                        ctx.stroke();
-                    }
-                }
-            } else {
-                return; // Animation finished
-            }
-
-            animationFrameId = requestAnimationFrame(animate);
+        if (animationPaused) {
+          animationFrameId = requestAnimationFrame(animate);
+          return;
         }
 
-        // Draw function
-        async function drawSpirograph() {
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
+        const speed = parseInt(document.getElementById("speed").value, 10);
+        const steps = Math.max(1, Math.floor(deltaTime / speed));
+
+        if (currentPointIndex < pointsToDraw[0].length - 1) {
+          for (
+            let k = 0;
+            k < steps && currentPointIndex < pointsToDraw[0].length - 1;
+            k++
+          ) {
+            currentPointIndex++;
+            for (let i = 0; i < pointsToDraw.length; i++) {
+              const p1 = pointsToDraw[i][currentPointIndex - 1];
+              const p2 = pointsToDraw[i][currentPointIndex];
+              ctx.beginPath();
+              ctx.moveTo(p1.x + canvas.width / 2, p1.y + canvas.height / 2);
+              ctx.lineTo(p2.x + canvas.width / 2, p2.y + canvas.height / 2);
+              ctx.strokeStyle = penColors[i];
+              ctx.stroke();
             }
-            animationPaused = false;
-            currentPointIndex = 0;
-            
-            // Clear canvas and remove previews
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = document.getElementById("lineWidth").value;
-
-            const R = parseFloat(document.getElementById("R").value);
-            const r = parseFloat(document.getElementById("r").value);
-            const inside = document.getElementById("inside").checked;
-            const dInputs = document.querySelectorAll(".d-input");
-            const colorInputs = document.querySelectorAll(".form-control-color");
-            const dArray = Array.from(dInputs).map(input => parseFloat(input.value));
-            penColors = Array.from(colorInputs).map(input => input.value);
-
-            // Call the Go WASM function with multiple pens
-            pointsToDraw = spirograph(R, r, dArray, inside);
-            lastTime = null;
-            animationFrameId = requestAnimationFrame(animate);
+          }
+        } else {
+          return; // Animation finished
         }
 
-        // Form submission handler
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            drawSpirograph();
-        });
+        animationFrameId = requestAnimationFrame(animate);
+      }
 
-        // Pause/Resume button
-        pauseBtn.addEventListener("click", () => {
-            animationPaused = !animationPaused;
-            pauseBtn.textContent = animationPaused ? "Resume" : "Pause";
-        });
+      // Draw function
+      async function drawSpirograph() {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        animationPaused = false;
+        currentPointIndex = 0;
 
-        // Stop/Reset button
-        stopBtn.addEventListener("click", () => {
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            animationPaused = false;
-            currentPointIndex = 0;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            pauseBtn.textContent = "Pause";
-            drawPreview(); // Redraw previews after reset
-        });
+        // Clear canvas and remove previews
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = document.getElementById("lineWidth").value;
 
-        // Initial setup when the page loads
-        setupInitialState();
+        const R = parseFloat(document.getElementById("R").value);
+        const r = parseFloat(document.getElementById("r").value);
+        const inside = document.getElementById("inside").checked;
+        const dInputs = document.querySelectorAll(".d-input");
+        const colorInputs = document.querySelectorAll(".form-control-color");
+        const dArray = Array.from(dInputs).map((input) =>
+          parseFloat(input.value)
+        );
+        penColors = Array.from(colorInputs).map((input) => input.value);
+
+        // Call the Go WASM function with multiple pens
+        pointsToDraw = spirograph(R, r, dArray, inside);
+        lastTime = null;
+        animationFrameId = requestAnimationFrame(animate);
+      }
+
+      // Form submission handler
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        drawSpirograph();
+      });
+
+      // Pause/Resume button
+      pauseBtn.addEventListener("click", () => {
+        animationPaused = !animationPaused;
+        pauseBtn.textContent = animationPaused ? "Resume" : "Pause";
+      });
+
+      // Stop/Reset button
+      stopBtn.addEventListener("click", () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        animationPaused = false;
+        currentPointIndex = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pauseBtn.textContent = "Pause";
+        drawPreview(); // Redraw previews after reset
+      });
+
+      // Initial setup when the page loads
+      setupInitialState();
     </script>
-</body>
+  </body>
 </html>
